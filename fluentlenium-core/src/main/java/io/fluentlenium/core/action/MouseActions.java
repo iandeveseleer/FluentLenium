@@ -1,15 +1,15 @@
 package io.fluentlenium.core.action;
 
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.interactions.Coordinates;
-import org.openqa.selenium.interactions.HasInputDevices;
-import org.openqa.selenium.interactions.Mouse;
+import org.openqa.selenium.interactions.Actions;
 
 /**
  * Execute actions with the mouse.
  */
 public class MouseActions {
     private final WebDriver driver;
+
+    private Actions actions;
 
     /**
      * Creates a new mouse actions.
@@ -21,38 +21,27 @@ public class MouseActions {
     }
 
     /**
-     * Get the actions object.
+     * Creates a new mouse actions.
      *
-     * @return actions object
+     * @param driver driver
+     * @param actions selenium actions
      */
-    protected org.openqa.selenium.interactions.Actions actions() {
-        return new org.openqa.selenium.interactions.Actions(driver);
+    public MouseActions(WebDriver driver, Actions actions) {
+        this.driver = driver;
+        this.actions = actions;
     }
 
     /**
-     * Basic mouse operations
+     * Get selenium interaction actions
      *
-     * @return low level interface to control the mouse
-     * @deprecated Use the following mapping for updating your code:
-     * <p>
-     * {@link Mouse#click(Coordinates)} to {@link MouseElementActions#click()}
-     * <p>
-     * {@link Mouse#doubleClick(Coordinates)} to {@link MouseElementActions#doubleClick()}
-     * <p>
-     * {@link Mouse#mouseDown(Coordinates)} to {@link MouseElementActions#moveToElement()}
-     * then {@link MouseElementActions#clickAndHold()}
-     * <p>
-     * {@link Mouse#mouseUp(Coordinates)} to {@link MouseElementActions#release()}
-     * <p>
-     * {@link Mouse#mouseMove(Coordinates)} to {@link MouseElementActions#moveToElement()}
-     * <p>
-     * {@link Mouse#mouseMove(Coordinates, long, long)} to {@link MouseElementActions#moveToElement(int, int)}
-     * <p>
-     * {@link Mouse#contextClick(Coordinates)} to {@link MouseElementActions#contextClick()}
+     * @return actions
      */
-    @Deprecated
-    public Mouse basic() {
-        return ((HasInputDevices) driver).getMouse();
+    protected Actions actions() {
+        if (actions == null) {
+            this.actions = new Actions(driver);
+        }
+
+        return actions;
     }
 
     /**

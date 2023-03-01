@@ -4,7 +4,7 @@ import io.fluentlenium.utils.ReflectionUtils;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.Augmenter;
-import org.openqa.selenium.remote.BrowserType;
+import org.openqa.selenium.remote.Browser;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -103,7 +103,7 @@ public class DefaultWebDriverFactories {
         protected DesiredCapabilities newDefaultCapabilities() {
             DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
             desiredCapabilities.setJavascriptEnabled(true);
-            desiredCapabilities.setBrowserName(BrowserType.HTMLUNIT);
+            desiredCapabilities.setBrowserName(Browser.HTMLUNIT.browserName());
             return desiredCapabilities;
         }
     }

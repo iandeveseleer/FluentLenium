@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.fluentlenium</groupId>
         <artifactId>fluentlenium-parent</artifactId>
-        <version>6.0.0-SNAPSHOT</version>
+        <version>6.0.0-pj</version>
     </parent>
     <artifactId>fluentlenium-core</artifactId>
     <packaging>jar</packaging>
@@ -139,11 +139,6 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-edge-driver</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-opera-driver</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
