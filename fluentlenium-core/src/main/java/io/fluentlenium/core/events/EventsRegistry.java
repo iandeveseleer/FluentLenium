@@ -5,8 +5,8 @@ import io.fluentlenium.core.FluentControl;
 import io.fluentlenium.core.components.DefaultComponentInstantiator;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WrapsDriver;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
-import org.openqa.selenium.support.events.WebDriverEventListener;
+import org.openqa.selenium.support.events.EventFiringDecorator;
+import org.openqa.selenium.support.events.WebDriverListener;
 
 import java.awt.event.ContainerListener;
 import java.util.ArrayList;
@@ -18,7 +18,9 @@ import java.util.List;
  */
 public class EventsRegistry implements WrapsDriver { // NOPMD TooManyFields
 
-    private final EventFiringWebDriver eventDriver;
+    private final WebDriver eventDriver;
+
+    private EventFiringDecorator<WebDriver> eventFiringDecorator;
 
     private final EventsSupport support;
 
@@ -104,10 +106,10 @@ public class EventsRegistry implements WrapsDriver { // NOPMD TooManyFields
      * @param control control interface
      */
     public EventsRegistry(FluentControl control) {
-        eventDriver = (EventFiringWebDriver) control.getDriver();
         support = new EventsSupport(this);
         instantiator = new DefaultComponentInstantiator(control);
-        eventDriver.register(new EventAdapter(support, instantiator));
+        eventDriver = new EventFiringDecorator<>().decorate(control.getDriver());
+        eventFiringDecorator = new EventFiringDecorator<>(new EventAdapter(support, instantiator));
     }
 
     /**
@@ -116,8 +118,8 @@ public class EventsRegistry implements WrapsDriver { // NOPMD TooManyFields
      * @param eventListener event listener to register
      * @return {@code this} to chain method calls
      */
-    public EventsRegistry register(WebDriverEventListener eventListener) {
-        eventDriver.register(eventListener);
+    public EventsRegistry register(WebDriverListener eventListener) {
+        eventFiringDecorator = new EventFiringDecorator<>(eventListener);
         return this;
     }
 
@@ -128,7 +130,7 @@ public class EventsRegistry implements WrapsDriver { // NOPMD TooManyFields
      * @return {@code this} to chain method calls
      */
     public EventsRegistry register(EventListener eventListener) {
-        eventDriver.register(new EventAdapter(eventListener, instantiator));
+        eventFiringDecorator = new EventFiringDecorator<>(new EventAdapter(eventListener, instantiator));
         return this;
     }
 
@@ -139,7 +141,7 @@ public class EventsRegistry implements WrapsDriver { // NOPMD TooManyFields
      * @return {@code this} to chain method calls
      */
     public EventsRegistry unregister(EventListener eventListener) {
-        eventDriver.unregister(new EventAdapter(eventListener, instantiator));
+        eventFiringDecorator = new EventFiringDecorator<>();
         return this;
     }
 
@@ -152,7 +154,7 @@ public class EventsRegistry implements WrapsDriver { // NOPMD TooManyFields
 
     @Override
     public WebDriver getWrappedDriver() {
-        return eventDriver.getWrappedDriver();
+        return eventDriver;
     }
 
     /**

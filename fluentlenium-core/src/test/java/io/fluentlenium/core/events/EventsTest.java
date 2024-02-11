@@ -15,7 +15,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WrapsElement;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
+import org.openqa.selenium.support.events.EventFiringDecorator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -46,7 +46,7 @@ public class EventsTest {
     @Mock
     private WebDriver.Timeouts timeouts;
 
-    private EventFiringWebDriver eventDriver;
+    private WebDriver eventDriver;
 
     private ComponentInstantiator instantiator;
     private FluentAdapter fluentAdapter;
@@ -57,7 +57,7 @@ public class EventsTest {
         when(driver.manage()).thenReturn(options);
         when(options.timeouts()).thenReturn(timeouts);
 
-        eventDriver = new EventFiringWebDriver(driver);
+        eventDriver = new EventFiringDecorator<>().decorate(driver);
         fluentAdapter = new FluentAdapter();
         fluentAdapter.initFluent(eventDriver);
 
@@ -212,7 +212,7 @@ public class EventsTest {
 
         reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener, beforeListener, afterListener);
 
-        eventDriver.executeScript("test");
+        ((JavascriptWebDriver) eventDriver).executeScript("test");
 
         verify(beforeScriptListener).on(eq("test"), notNull());
         verify(afterScriptListener).on(eq("test"), notNull());

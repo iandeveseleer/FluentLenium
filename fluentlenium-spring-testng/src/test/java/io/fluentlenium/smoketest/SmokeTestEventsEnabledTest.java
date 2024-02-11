@@ -1,8 +1,9 @@
 package io.fluentlenium.smoketest;
 
 import io.fluentlenium.IntegrationFluentTestNg;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
+import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.springframework.test.context.ContextConfiguration;
 import org.testng.annotations.Test;
 
@@ -14,9 +15,9 @@ public class SmokeTestEventsEnabledTest extends IntegrationFluentTestNg {
     @SuppressWarnings("ConstantConditions")
     @Test
     public void smokeTest() {
-        assertThat(getDriver()).isInstanceOf(EventFiringWebDriver.class);
-        EventFiringWebDriver driver = (EventFiringWebDriver) getDriver();
-        assertThat(driver.getWrappedDriver()).isInstanceOf(ChromeDriver.class);
+        assertThat(getDriver()).isInstanceOf(EventFiringDecorator.class);
+        WebDriver driver = new EventFiringDecorator<>().decorate(getDriver());
+        assertThat(driver).isInstanceOf(ChromeDriver.class);
     }
 
 }

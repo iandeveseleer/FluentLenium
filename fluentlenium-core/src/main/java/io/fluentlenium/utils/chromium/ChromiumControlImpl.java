@@ -2,7 +2,7 @@ package io.fluentlenium.utils.chromium;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
+import org.openqa.selenium.support.events.EventFiringDecorator;
 
 public class ChromiumControlImpl implements ChromiumControl {
 
@@ -13,8 +13,8 @@ public class ChromiumControlImpl implements ChromiumControl {
     }
 
     public final ChromiumApi getChromiumApi() {
-        if (driver instanceof EventFiringWebDriver) {
-            driver = ((EventFiringWebDriver) driver).getWrappedDriver();
+        if (driver instanceof EventFiringDecorator) {
+            driver = new EventFiringDecorator<>().decorate(driver);
         }
 
         RemoteWebDriver remoteWebDriver;
