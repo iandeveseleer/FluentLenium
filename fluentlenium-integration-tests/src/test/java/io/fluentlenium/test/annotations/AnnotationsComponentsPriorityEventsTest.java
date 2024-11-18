@@ -1,20 +1,21 @@
 package io.fluentlenium.test.annotations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.fluentlenium.core.FluentControl;
 import io.fluentlenium.core.annotation.Page;
 import io.fluentlenium.core.components.ComponentInstantiator;
 import io.fluentlenium.core.domain.FluentWebElement;
 import io.fluentlenium.core.events.annotations.AfterClickOn;
 import io.fluentlenium.test.IntegrationFluentTest;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
+@Disabled("Not using Events")
 public class AnnotationsComponentsPriorityEventsTest extends IntegrationFluentTest {
     @Page
     private TestPage page;

@@ -2,8 +2,8 @@ package io.fluentlenium.adapter.spock.smoketest
 
 import io.fluentlenium.adapter.spock.FluentSpecification
 import io.github.bonigarcia.wdm.managers.ChromeDriverManager
+import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.support.events.EventFiringWebDriver
 
 import static org.assertj.core.api.Assertions.assertThat
 
@@ -15,9 +15,9 @@ class SmokeTestSpec extends FluentSpecification {
 
     def "smokeTest"() {
         expect:
-        assertThat(getDriver()).isInstanceOf(EventFiringWebDriver.class)
-        EventFiringWebDriver driver = (EventFiringWebDriver) getDriver()
-        assertThat(driver.getWrappedDriver()).isInstanceOf(ChromeDriver.class)
+        assertThat(getDriver()).isInstanceOf(WebDriver.class)
+        WebDriver driver = getDriver()
+        assertThat(driver).isInstanceOf(ChromeDriver.class)
     }
 
 }

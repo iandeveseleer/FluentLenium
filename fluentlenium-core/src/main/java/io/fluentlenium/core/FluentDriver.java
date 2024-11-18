@@ -29,6 +29,9 @@ import io.fluentlenium.utils.UrlUtils;
 import io.fluentlenium.utils.chromium.ChromiumApi;
 import io.fluentlenium.utils.chromium.ChromiumControl;
 import io.fluentlenium.utils.chromium.ChromiumControlImpl;
+import java.io.File;
+import java.util.Date;
+import java.util.Set;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
@@ -38,23 +41,18 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WrapsElement;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.Date;
-import java.util.Set;
-
 /**
- * Wrapper class for a {@link WebDriver} instance which also offers shortcut and convenience methods,
+ * Wrapper class for a {@link WebDriver} instance which also offers shortcut and convenience
+ * methods,
  * as well as methods to work with mouse, keyboard and windows.
  */
 @SuppressWarnings("PMD.GodClass")
 public class FluentDriver extends AbstractFluentDriverSearchControl { // NOPMD GodClass
 
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(FluentDriver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FluentDriver.class);
 
     private final Configuration configuration;
     private final ComponentsManager componentsManager;
@@ -91,7 +89,7 @@ public class FluentDriver extends AbstractFluentDriverSearchControl { // NOPMD G
         driverWait = new FluentDriverWait(configuration);
         this.driver = driver;
         search = new Search(driver, this, componentsManager, adapter);
-        if (driver instanceof EventFiringWebDriver) {
+        if (driver instanceof WebDriver) {
             events = new EventsRegistry(this);
             componentsEventsRegistry = new ComponentsEventsRegistry(events, componentsManager);
         } else {
@@ -100,7 +98,8 @@ public class FluentDriver extends AbstractFluentDriverSearchControl { // NOPMD G
         }
         mouseActions = new MouseActions(driver);
         keyboardActions = new KeyboardActions(driver);
-        fluentInjector = new FluentInjector(adapter, events, componentsManager, new DefaultContainerInstantiator(this));
+        fluentInjector = new FluentInjector(adapter, events, componentsManager,
+                new DefaultContainerInstantiator(this));
         cssControl = new CssControlImpl(adapter, adapter);
         windowAction = new WindowAction(adapter, componentsManager.getInstantiator(), driver);
         performanceTiming = new DefaultPerformanceTiming(driver);
@@ -163,9 +162,10 @@ public class FluentDriver extends AbstractFluentDriverSearchControl { // NOPMD G
 
     @Override
     public EventsRegistry events() {
-        return Preconditions.checkState(events, "An EventFiringWebDriver instance is required to use events. "
-                + "You should set 'eventsEnabled' configuration property to 'true' "
-                + "or override newWebDriver() to build an EventFiringWebDriver.");
+        return Preconditions.checkState(events,
+                "An EventFiringWebDriver instance is required to use events. "
+                        + "You should set 'eventsEnabled' configuration property to 'true' "
+                        + "or override newWebDriver() to build an EventFiringWebDriver.");
     }
 
     @Override
@@ -224,7 +224,8 @@ public class FluentDriver extends AbstractFluentDriverSearchControl { // NOPMD G
 
     @Override
     public <P extends FluentPage> P goTo(P page) {
-        Preconditions.checkArgument(page, "It is required to specify an instance of FluentPage for navigation.");
+        Preconditions.checkArgument(page,
+                "It is required to specify an instance of FluentPage for navigation.");
         page.go();
         return page;
     }
@@ -237,7 +238,8 @@ public class FluentDriver extends AbstractFluentDriverSearchControl { // NOPMD G
 
     @Override
     public void goToInNewTab(String url) {
-        Preconditions.checkArgument(url, "It is required to specify a URL to navigate to (in a new tab).");
+        Preconditions.checkArgument(url,
+                "It is required to specify a URL to navigate to (in a new tab).");
         String newTab;
         synchronized (getClass()) {
             Set<String> initialTabs = getDriver().getWindowHandles();
@@ -276,7 +278,8 @@ public class FluentDriver extends AbstractFluentDriverSearchControl { // NOPMD G
             getDriver().switchTo().defaultContent();
         } else {
             WebElement target = element.getElement();
-            while (target instanceof WrapsElement && target != ElementUtils.getWrappedElement(target)) {
+            while (target instanceof WrapsElement && target != ElementUtils.getWrappedElement(
+                    target)) {
                 target = ElementUtils.getWrappedElement(target);
             }
             getDriver().switchTo().frame(target);
@@ -339,7 +342,9 @@ public class FluentDriver extends AbstractFluentDriverSearchControl { // NOPMD G
     }
 
     @Override
-    public ContainerContext injectComponent(Object componentContainer, Object parentContainer, SearchContext searchContext) {
+    public ContainerContext injectComponent(Object componentContainer,
+            Object parentContainer,
+            SearchContext searchContext) {
         return fluentInjector.injectComponent(componentContainer, parentContainer, searchContext);
     }
 

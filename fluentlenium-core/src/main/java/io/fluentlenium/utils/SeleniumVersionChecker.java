@@ -1,11 +1,7 @@
 package io.fluentlenium.utils;
 
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,12 +11,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.toList;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Responsible for retrieving information about Selenium version from pom.xml (if present). It logs warning when wrong
+ * Responsible for retrieving information about Selenium version from pom.xml (if present). It logs
+ * warning when wrong
  * version is used.
  */
 public final class SeleniumVersionChecker {
@@ -35,7 +35,7 @@ public final class SeleniumVersionChecker {
             "You are using incompatible Selenium version {}. Please change it to {}. "
                     + "You can find example on project main page {}";
 
-    private static final String EXPECTED_VERSION = "4.10.0";
+    private static final String EXPECTED_VERSION = "4.26.0";
     private static final String SELENIUM_GROUP_ID = "org.seleniumhq.selenium";
     private static final String FL_URL = "https://github.com/FluentLenium/FluentLenium";
     private static final String POM = "pom.xml";
@@ -62,7 +62,8 @@ public final class SeleniumVersionChecker {
     /**
      * First, if the pom.xml exists, validates the Selenium version in it.
      * <p>
-     * If the pom.xml doesn't exist or it doesn't contain a Selenium version, then it proceed to validate the parent
+     * If the pom.xml doesn't exist or it doesn't contain a Selenium version, then it proceed to
+     * validate the parent
      * module's pom.xml.
      */
     private static void checkVersionFromMaven() {
@@ -85,7 +86,8 @@ public final class SeleniumVersionChecker {
      * <p>
      * It can resolve both explicit and parametrised version numbers as well.
      * <p>
-     * If the resolved version doesn't equal to the {@link #EXPECTED_VERSION}, it logs an error message.
+     * If the resolved version doesn't equal to the {@link #EXPECTED_VERSION}, it logs an error
+     * message.
      *
      * @param model the pom.xml model
      */
@@ -106,7 +108,8 @@ public final class SeleniumVersionChecker {
             }
 
             if (!Objects.equals(resolvedSeleniumVersion, EXPECTED_VERSION)) {
-                LOGGER.warn(WRONG_VERSION_MESSAGE, resolvedSeleniumVersion, EXPECTED_VERSION, FL_URL);
+                LOGGER.warn(WRONG_VERSION_MESSAGE, resolvedSeleniumVersion, EXPECTED_VERSION,
+                        FL_URL);
             }
         }
     }
@@ -127,31 +130,31 @@ public final class SeleniumVersionChecker {
     /**
      * Tries to retrieve the Selenium version from the provided POM Model.
      * <p>
-     * It looks for the dependency (groupId: org.seleniumhq.selenium) in both the {@code <dependencies>} and
+     * It looks for the dependency (groupId: org.seleniumhq.selenium) in both the
+     * {@code <dependencies>} and
      * {@code <dependencyManagement>} (if exists) sections.
      * <p>
-     * Any artifactId that is not {@code htmlunit-driver} is collected, and the first one's version is returned,
+     * Any artifactId that is not {@code htmlunit-driver} is collected, and the first one's version
+     * is returned,
      * or null if there was no matching dependency.
      *
      * @param model the POM model
+     *
      * @return the actual Selenium version, or null if none is present
      */
     static String retrieveVersionFromPom(Model model) {
         List<Dependency> dependencies;
 
         if (nonNull(model.getDependencyManagement())) {
-            dependencies = Stream.of(model.getDependencies(), model.getDependencyManagement().getDependencies())
-                    .flatMap(Collection::stream)
+            dependencies = Stream.of(model.getDependencies(),
+                            model.getDependencyManagement().getDependencies()).flatMap(Collection::stream)
                     .collect(toList());
         } else {
             dependencies = model.getDependencies();
         }
-        return dependencies.stream()
-                .filter(dep -> dep.getGroupId().contains(SELENIUM_GROUP_ID))
+        return dependencies.stream().filter(dep -> dep.getGroupId().contains(SELENIUM_GROUP_ID))
                 .filter(dep -> !dep.getArtifactId().contains("htmlunit-driver"))
-                .filter(dep -> dep.getVersion() != null)
-                .findFirst()
-                .map(Dependency::getVersion)
+                .filter(dep -> dep.getVersion() != null).findFirst().map(Dependency::getVersion)
                 .orElse(null);
     }
 
@@ -160,7 +163,8 @@ public final class SeleniumVersionChecker {
     }
 
     /**
-     * If the Selenium version happens to be parametrised, this method tries to retrieve it from various sources,
+     * If the Selenium version happens to be parametrised, this method tries to retrieve it from
+     * various sources,
      * in the following order:
      * <ul>
      *     <li>from Maven properties from the provided Model</li>
@@ -170,6 +174,7 @@ public final class SeleniumVersionChecker {
      *
      * @param seleniumVersion the name of the Selenium version property
      * @param model           the POM model
+     *
      * @return the actual version number, or null if none found
      */
     static String resolveParametrisedVersionFromPom(String seleniumVersion, Model model) {
@@ -190,16 +195,14 @@ public final class SeleniumVersionChecker {
     }
 
     private static String getVersionNameFromProfiles(String version, Model model) {
-        return model.getProfiles().stream()
-                .filter(prof ->
-                        nonNull(prof.getProperties()) && nonNull(prof.getProperties().getProperty(version)))
-                .findAny()
-                .map(prof -> prof.getProperties().getProperty(version))
-                .orElse(null);
+        return model.getProfiles().stream().filter(prof -> nonNull(prof.getProperties()) && nonNull(
+                        prof.getProperties().getProperty(version))).findAny()
+                .map(prof -> prof.getProperties().getProperty(version)).orElse(null);
     }
 
     private static String getNamePropertyName(String propertyVersion) {
-        return nonNull(propertyVersion) ? propertyVersion.substring(2, propertyVersion.length() - 1) : "";
+        return nonNull(propertyVersion) ? propertyVersion.substring(2, propertyVersion.length() - 1)
+                : "";
     }
 
     /**
@@ -207,6 +210,7 @@ public final class SeleniumVersionChecker {
      *
      * @param reader    the maven reader
      * @param pathToPom the path to the POM file
+     *
      * @return the Maven Model, or null if a problem occurred during reading the file
      */
     static Model readPom(MavenXpp3Reader reader, String pathToPom) {

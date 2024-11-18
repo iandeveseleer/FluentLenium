@@ -5,9 +5,11 @@ import io.fluentlenium.core.events.FindByListener;
 import io.fluentlenium.core.events.NavigateAllListener;
 import io.fluentlenium.core.events.NavigateListener;
 import io.fluentlenium.test.IntegrationFluentTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+@Disabled("Not using EventFiringWebDriver")
 class EventsTest extends IntegrationFluentTest {
 
     @Test

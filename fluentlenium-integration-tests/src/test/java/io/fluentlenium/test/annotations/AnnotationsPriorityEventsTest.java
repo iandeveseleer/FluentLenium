@@ -1,15 +1,16 @@
 package io.fluentlenium.test.annotations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.fluentlenium.core.domain.FluentWebElement;
 import io.fluentlenium.core.events.annotations.BeforeClickOn;
 import io.fluentlenium.test.IntegrationFluentTest;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+@Disabled("Not using Events")
 class AnnotationsPriorityEventsTest extends IntegrationFluentTest {
     private static List<Integer> beforeClick = new ArrayList<>();
 

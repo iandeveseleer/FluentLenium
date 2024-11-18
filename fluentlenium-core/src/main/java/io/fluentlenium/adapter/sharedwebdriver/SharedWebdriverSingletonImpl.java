@@ -1,14 +1,13 @@
 package io.fluentlenium.adapter.sharedwebdriver;
 
+import static io.fluentlenium.utils.ExecutorServiceUtil.getExecutor;
+import static io.fluentlenium.utils.ExecutorServiceUtil.shutDownExecutor;
+
 import io.fluentlenium.adapter.SharedMutator;
 import io.fluentlenium.adapter.SharedMutator.EffectiveParameters;
 import io.fluentlenium.configuration.Configuration;
 import io.fluentlenium.configuration.ConfigurationProperties.DriverLifecycle;
 import io.fluentlenium.configuration.WebDrivers;
-import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,9 +19,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
-
-import static io.fluentlenium.utils.ExecutorServiceUtil.getExecutor;
-import static io.fluentlenium.utils.ExecutorServiceUtil.shutDownExecutor;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.events.EventFiringDecorator;
 
 /**
  * Shared web driver container singleton implementation.
@@ -50,30 +49,35 @@ class SharedWebdriverSingletonImpl {
     }
 
     /**
-     * Get an existing or create a new shared driver for the given test, with the given shared driver
+     * Get an existing or create a new shared driver for the given test, with the given shared
+     * driver
      * lifecycle strategy.
      *
      * @param webDriverFactory Supplier supplying new WebDriver instances
      * @param parameters       test parameters
+     *
      * @return shared web driver
      */
-    SharedWebDriver getOrCreateDriver(Supplier<WebDriver> webDriverFactory, EffectiveParameters<?> parameters) {
+    SharedWebDriver getOrCreateDriver(Supplier<WebDriver> webDriverFactory,
+            EffectiveParameters<?> parameters) {
         synchronized (this) {
             return Optional.ofNullable(getDriver(parameters))
                     .orElseGet(() -> createAndRegisterNewDriver(webDriverFactory, parameters));
         }
     }
 
-    private SharedWebDriver createAndRegisterNewDriver(Supplier<WebDriver> webDriverFactory, EffectiveParameters<?> parameters) {
+    private SharedWebDriver createAndRegisterNewDriver(Supplier<WebDriver> webDriverFactory,
+            EffectiveParameters<?> parameters) {
         SharedWebDriver driver = createDriver(webDriverFactory, parameters);
         registerDriver(driver);
         return driver;
     }
 
-    private SharedWebDriver createDriver(Supplier<WebDriver> webDriverFactory, EffectiveParameters<?> parameters) {
+    private SharedWebDriver createDriver(Supplier<WebDriver> webDriverFactory,
+            EffectiveParameters<?> parameters) {
         WebDriver webDriver = webDriverFactory.get();
-        return new SharedWebDriver(webDriver,
-                parameters.getTestClass(), parameters.getTestName(), parameters.getDriverLifecycle());
+        return new SharedWebDriver(webDriver, parameters.getTestClass(), parameters.getTestName(),
+                parameters.getDriverLifecycle());
     }
 
     private void registerDriver(SharedWebDriver driver) {
@@ -86,6 +90,7 @@ class SharedWebdriverSingletonImpl {
      * Get the current driver for given test class.
      *
      * @param parameters test parameters
+     *
      * @return shared WebDriver
      */
     public SharedWebDriver getDriver(EffectiveParameters<?> parameters) {
@@ -96,11 +101,12 @@ class SharedWebdriverSingletonImpl {
                 case CLASS:
                     return classDriverImpl.getDriver(parameters.getTestClass());
                 case THREAD:
-                    return threadDriverImpl.getDriver(parameters.getTestClass(), parameters.getTestName(),
-                            Thread.currentThread().getId());
+                    return threadDriverImpl.getDriver(parameters.getTestClass(),
+                            parameters.getTestName(), Thread.currentThread().getId());
 
                 default:
-                    return methodDriverImpl.getDriver(parameters.getTestClass(), parameters.getTestName());
+                    return methodDriverImpl.getDriver(parameters.getTestClass(),
+                            parameters.getTestName());
             }
         }
     }
@@ -136,20 +142,23 @@ class SharedWebdriverSingletonImpl {
      * Get all shared WebDriver of this container for a given test class.
      *
      * @param testClass test class
+     *
      * @return list of shared WebDriver
      */
     List<SharedWebDriver> getTestClassDrivers(Class<?> testClass) {
         List<SharedWebDriver> testClassDrivers = new ArrayList<>();
 
         synchronized (this) {
-            Optional.ofNullable(classDriverImpl.getClassDrivers().get(testClass)).ifPresent(testClassDrivers::add);
+            Optional.ofNullable(classDriverImpl.getClassDrivers().get(testClass))
+                    .ifPresent(testClassDrivers::add);
             testClassDrivers.addAll(getDrivers(testClass, methodDriverImpl.getMethodDrivers()));
             testClassDrivers.addAll(getDrivers(testClass, threadDriverImpl.getThreadDrivers()));
             return Collections.unmodifiableList(testClassDrivers);
         }
     }
 
-    private List<SharedWebDriver> getDrivers(Class<?> testClass, Map<?, SharedWebDriver> webDrivers) {
+    private List<SharedWebDriver> getDrivers(Class<?> testClass,
+            Map<?, SharedWebDriver> webDrivers) {
         List<SharedWebDriver> sharedDrivers = new ArrayList<>();
         for (SharedWebDriver testDriver : webDrivers.values()) {
             if (testDriver.getTestClass() == testClass) {
@@ -184,22 +193,24 @@ class SharedWebdriverSingletonImpl {
      *
      * @param parameters        driver parameters
      * @param webDriverExecutor executor service
+     *
      * @return SharedDriver
+     *
      * @throws ExecutionException   execution exception
      * @throws InterruptedException interrupted exception
      */
     public SharedWebDriver getSharedWebDriver(SharedMutator.EffectiveParameters<?> parameters,
-                                              ExecutorService webDriverExecutor,
-                                              Supplier<WebDriver> webDriver,
-                                              Configuration configuration)
-            throws ExecutionException, InterruptedException {
+            ExecutorService webDriverExecutor,
+            Supplier<WebDriver> webDriver,
+            Configuration configuration) throws ExecutionException, InterruptedException {
         SharedWebDriver sharedWebDriver = null;
         ExecutorService executorService = getExecutor(webDriverExecutor);
 
         Integer browserTimeoutRetries = configuration.getBrowserTimeoutRetries();
         for (int retryCount = 0; retryCount < browserTimeoutRetries; retryCount++) {
 
-            Future<SharedWebDriver> futureWebDriver = createDriver(parameters, executorService, webDriver);
+            Future<SharedWebDriver> futureWebDriver = createDriver(parameters, executorService,
+                    webDriver);
             shutDownExecutor(executorService, configuration.getBrowserTimeout());
 
             try {
@@ -218,16 +229,19 @@ class SharedWebdriverSingletonImpl {
     }
 
     private Future<SharedWebDriver> createDriver(SharedMutator.EffectiveParameters<?> parameters,
-                                                 ExecutorService executorService,
-                                                 Supplier<WebDriver> newWebDriver) {
+            ExecutorService executorService,
+            Supplier<WebDriver> newWebDriver) {
         return executorService.submit(
-                () -> SharedWebDriverContainer.INSTANCE.getOrCreateDriver(newWebDriver, parameters));
+                () -> SharedWebDriverContainer.INSTANCE.getOrCreateDriver(newWebDriver,
+                        parameters));
     }
 
-    public WebDriver newWebDriver(String name, Capabilities capabilities, Configuration configuration) {
+    public WebDriver newWebDriver(String name,
+            Capabilities capabilities,
+            Configuration configuration) {
         WebDriver webDriver = WebDrivers.INSTANCE.newWebDriver(name, capabilities, configuration);
         if (Boolean.TRUE.equals(configuration.getEventsEnabled())) {
-            webDriver = new EventFiringWebDriver(webDriver);
+            webDriver = new EventFiringDecorator<>().decorate(webDriver);
         }
         return webDriver;
     }

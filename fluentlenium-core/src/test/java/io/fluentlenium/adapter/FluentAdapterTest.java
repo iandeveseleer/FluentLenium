@@ -1,5 +1,9 @@
 package io.fluentlenium.adapter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.openqa.selenium.remote.Browser.HTMLUNIT;
+
 import io.fluentlenium.configuration.ConfigurationProperties;
 import io.fluentlenium.utils.ScreenshotUtil;
 import org.assertj.core.api.Assertions;
@@ -15,14 +19,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WrapsDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.openqa.selenium.remote.Browser.HTMLUNIT;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FluentAdapterTest {
+
     @Mock
     private WebDriver webDriver;
 
@@ -75,16 +75,20 @@ public class FluentAdapterTest {
     public void shouldConfigureProperly() {
         FluentAdapter adapter = new FluentAdapter();
 
-        adapter.getConfiguration().setScreenshotMode(ConfigurationProperties.TriggerMode.AUTOMATIC_ON_FAIL);
-        assertThat(adapter.getScreenshotMode()).isSameAs(ConfigurationProperties.TriggerMode.AUTOMATIC_ON_FAIL);
+        adapter.getConfiguration()
+                .setScreenshotMode(ConfigurationProperties.TriggerMode.AUTOMATIC_ON_FAIL);
+        assertThat(adapter.getScreenshotMode()).isSameAs(
+                ConfigurationProperties.TriggerMode.AUTOMATIC_ON_FAIL);
         adapter.getConfiguration().setScreenshotMode(null);
 
         adapter.getConfiguration().setScreenshotPath("path");
         Assertions.assertThat(adapter.getScreenshotPath()).isEqualTo("path");
         adapter.getConfiguration().setScreenshotPath(null);
 
-        adapter.getConfiguration().setHtmlDumpMode(ConfigurationProperties.TriggerMode.AUTOMATIC_ON_FAIL);
-        assertThat(adapter.getHtmlDumpMode()).isSameAs(ConfigurationProperties.TriggerMode.AUTOMATIC_ON_FAIL);
+        adapter.getConfiguration()
+                .setHtmlDumpMode(ConfigurationProperties.TriggerMode.AUTOMATIC_ON_FAIL);
+        assertThat(adapter.getHtmlDumpMode()).isSameAs(
+                ConfigurationProperties.TriggerMode.AUTOMATIC_ON_FAIL);
 
         adapter.getConfiguration().setHtmlDumpPath("dumpPath");
         Assertions.assertThat(adapter.getHtmlDumpPath()).isEqualTo("dumpPath");
@@ -114,11 +118,13 @@ public class FluentAdapterTest {
             newWebDriver = adapter.newWebDriver();
             newWebDriver2 = adapter.newWebDriver();
 
-            assertThat(newWebDriver).isNotSameAs(newWebDriver2).isInstanceOf(EventFiringWebDriver.class);
-            assertThat(newWebDriver2).isInstanceOf(EventFiringWebDriver.class);
+            assertThat(newWebDriver).isNotSameAs(newWebDriver2).isInstanceOf(WebDriver.class);
+            assertThat(newWebDriver2).isInstanceOf(WebDriver.class);
 
-            assertThat(((WrapsDriver) newWebDriver).getWrappedDriver()).isInstanceOf(HtmlUnitDriver.class);
-            assertThat(((WrapsDriver) newWebDriver).getWrappedDriver()).isInstanceOf(HtmlUnitDriver.class);
+            assertThat(((WrapsDriver) newWebDriver).getWrappedDriver()).isInstanceOf(
+                    HtmlUnitDriver.class);
+            assertThat(((WrapsDriver) newWebDriver).getWrappedDriver()).isInstanceOf(
+                    HtmlUnitDriver.class);
         } finally {
             if (newWebDriver != null) {
                 newWebDriver.quit();
@@ -142,7 +148,9 @@ public class FluentAdapterTest {
         FluentAdapter adapter = new FluentAdapter();
         adapter.initFluent(webDriver);
 
-        Assertions.assertThat(ScreenshotUtil.isIgnoredException(new AssumptionViolatedException("assumption"))).isTrue();
+        Assertions.assertThat(
+                        ScreenshotUtil.isIgnoredException(new AssumptionViolatedException("assumption")))
+                .isTrue();
     }
 
     @Test
@@ -150,6 +158,7 @@ public class FluentAdapterTest {
         FluentAdapter adapter = new FluentAdapter();
         adapter.initFluent(webDriver);
 
-        Assertions.assertThat(ScreenshotUtil.isIgnoredException(new NoSuchElementException("reason"))).isFalse();
+        Assertions.assertThat(
+                ScreenshotUtil.isIgnoredException(new NoSuchElementException("reason"))).isFalse();
     }
 }

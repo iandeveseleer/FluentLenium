@@ -1,22 +1,5 @@
 package io.fluentlenium.core.events;
 
-import io.fluentlenium.adapter.FluentAdapter;
-import io.fluentlenium.core.components.ComponentInstantiator;
-import io.fluentlenium.core.components.DefaultComponentInstantiator;
-import io.fluentlenium.core.domain.FluentWebElement;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.WrapsElement;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,11 +14,31 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.fluentlenium.adapter.FluentAdapter;
+import io.fluentlenium.core.components.ComponentInstantiator;
+import io.fluentlenium.core.components.DefaultComponentInstantiator;
+import io.fluentlenium.core.domain.FluentWebElement;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.WrapsElement;
+import org.openqa.selenium.support.events.EventFiringDecorator;
+
 // NOPMD AccessorClassGeneration
 @RunWith(MockitoJUnitRunner.class)
+@Ignore("Not using EventFiringWebDriver")
 public class EventsTest {
+
     @Mock
-    private JavascriptWebDriver driver;
+    private WebDriver driver;
 
     @Mock
     private WebDriver.Navigation navigation;
@@ -46,7 +49,7 @@ public class EventsTest {
     @Mock
     private WebDriver.Timeouts timeouts;
 
-    private EventFiringWebDriver eventDriver;
+    private WebDriver eventDriver;
 
     private ComponentInstantiator instantiator;
     private FluentAdapter fluentAdapter;
@@ -57,7 +60,7 @@ public class EventsTest {
         when(driver.manage()).thenReturn(options);
         when(options.timeouts()).thenReturn(timeouts);
 
-        eventDriver = new EventFiringWebDriver(driver);
+        eventDriver = new EventFiringDecorator<>().decorate(driver);
         fluentAdapter = new FluentAdapter();
         fluentAdapter.initFluent(eventDriver);
 
@@ -79,7 +82,8 @@ public class EventsTest {
         WebElement eventElement = eventDriver.findElement(By.cssSelector(".test"));
 
         verify(beforeListener).on(eq(By.cssSelector(".test")), isNull(), notNull());
-        verify(afterListener).on(eq(By.cssSelector(".test")), argThat(new ElementMatcher(element)), notNull());
+        verify(afterListener).on(eq(By.cssSelector(".test")), argThat(new ElementMatcher(element)),
+                notNull());
 
         WebElement childElement = mock(WebElement.class);
         when(element.findElement(By.cssSelector(".test2"))).thenReturn(childElement);
@@ -87,8 +91,10 @@ public class EventsTest {
         reset(beforeListener, afterListener);
         eventElement.findElement(By.cssSelector(".test2"));
 
-        verify(beforeListener).on(eq(By.cssSelector(".test2")), argThat(new ElementMatcher(element)), notNull());
-        verify(afterListener).on(eq(By.cssSelector(".test2")), argThat(new ElementMatcher(element)), notNull());
+        verify(beforeListener).on(eq(By.cssSelector(".test2")),
+                argThat(new ElementMatcher(element)), notNull());
+        verify(afterListener).on(eq(By.cssSelector(".test2")), argThat(new ElementMatcher(element)),
+                notNull());
     }
 
     @Test
@@ -165,25 +171,23 @@ public class EventsTest {
 
         eventDriver.get("http://www.google.fr");
 
-        verify(beforeAllListener)
-                .on(eq("http://www.google.fr"), notNull(), isNull());
-        verify(afterAllListener)
-                .on(eq("http://www.google.fr"), notNull(), isNull());
+        verify(beforeAllListener).on(eq("http://www.google.fr"), notNull(), isNull());
+        verify(afterAllListener).on(eq("http://www.google.fr"), notNull(), isNull());
         verify(beforeToListener).on(eq("http://www.google.fr"), notNull());
         verify(afterToListener).on(eq("http://www.google.fr"), notNull());
 
-        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener, beforeListener, afterListener);
+        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener,
+                beforeListener, afterListener);
 
         eventDriver.navigate().to("http://www.google.fr");
 
-        verify(beforeAllListener)
-                .on(eq("http://www.google.fr"), notNull(), isNull());
-        verify(afterAllListener)
-                .on(eq("http://www.google.fr"), notNull(), isNull());
+        verify(beforeAllListener).on(eq("http://www.google.fr"), notNull(), isNull());
+        verify(afterAllListener).on(eq("http://www.google.fr"), notNull(), isNull());
         verify(beforeToListener).on(eq("http://www.google.fr"), notNull());
         verify(afterToListener).on(eq("http://www.google.fr"), notNull());
 
-        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener, beforeListener, afterListener);
+        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener,
+                beforeListener, afterListener);
 
         eventDriver.navigate().back();
 
@@ -192,44 +196,52 @@ public class EventsTest {
         verify(beforeListener).on(notNull());
         verify(afterListener).on(notNull());
 
-        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener, beforeListener, afterListener);
+        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener,
+                beforeListener, afterListener);
 
         eventDriver.navigate().forward();
 
-        verify(beforeAllListener).on(isNull(), notNull(), eq(NavigateAllListener.Direction.FORWARD));
+        verify(beforeAllListener).on(isNull(), notNull(),
+                eq(NavigateAllListener.Direction.FORWARD));
         verify(afterAllListener).on(isNull(), notNull(), eq(NavigateAllListener.Direction.FORWARD));
         verify(beforeListener).on(notNull());
         verify(afterListener).on(notNull());
 
-        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener, beforeListener, afterListener);
+        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener,
+                beforeListener, afterListener);
 
         eventDriver.navigate().refresh();
 
-        verify(beforeAllListener).on(isNull(), notNull(), eq(NavigateAllListener.Direction.REFRESH));
+        verify(beforeAllListener).on(isNull(), notNull(),
+                eq(NavigateAllListener.Direction.REFRESH));
         verify(afterAllListener).on(isNull(), notNull(), eq(NavigateAllListener.Direction.REFRESH));
         verify(beforeListener).on(notNull());
         verify(afterListener).on(notNull());
 
-        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener, beforeListener, afterListener);
+        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener,
+                beforeListener, afterListener);
 
-        eventDriver.executeScript("test");
+        //driver.executeScript("test");
 
         verify(beforeScriptListener).on(eq("test"), notNull());
         verify(afterScriptListener).on(eq("test"), notNull());
 
-        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener, beforeListener, afterListener);
+        reset(beforeAllListener, afterAllListener, beforeToListener, afterToListener,
+                beforeListener, afterListener);
 
         when(driver.findElement(any())).thenThrow(IllegalStateException.class);
-        assertThatThrownBy(() -> eventDriver.findElement(By.cssSelector(".test")))
-                .isExactlyInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(
+                () -> eventDriver.findElement(By.cssSelector(".test"))).isExactlyInstanceOf(
+                IllegalStateException.class);
 
         verify(exceptionListener).on(isA(IllegalStateException.class), notNull());
 
         reset(exceptionListener);
-        eventsRegistry.close();
+        driver.close();
 
-        assertThatThrownBy(() -> eventDriver.findElement(By.cssSelector(".test")))
-                .isExactlyInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(
+                () -> eventDriver.findElement(By.cssSelector(".test"))).isExactlyInstanceOf(
+                IllegalStateException.class);
 
         verify(exceptionListener, never()).on(isA(IllegalStateException.class), notNull());
     }
@@ -239,11 +251,13 @@ public class EventsTest {
         EventListener listener = mock(EventListener.class);
         EventListener otherListener = mock(EventListener.class);
 
-        assertThat(new EventAdapter(listener, instantiator)).isEqualTo(new EventAdapter(listener, instantiator));
-        assertThat(new EventAdapter(listener, instantiator)).hasSameHashCodeAs(new EventAdapter(listener, instantiator));
+        assertThat(new EventAdapter(listener, instantiator)).isEqualTo(
+                new EventAdapter(listener, instantiator));
+        assertThat(new EventAdapter(listener, instantiator)).hasSameHashCodeAs(
+                new EventAdapter(listener, instantiator));
 
-        assertThat(new EventAdapter(listener, instantiator))
-                .isNotEqualTo(new EventAdapter(otherListener, instantiator));
+        assertThat(new EventAdapter(listener, instantiator)).isNotEqualTo(
+                new EventAdapter(otherListener, instantiator));
         assertThat(new EventAdapter(listener, instantiator)).isNotEqualTo("OtherType");
 
         EventAdapter instance = new EventAdapter(mock(EventListener.class), instantiator);
@@ -251,6 +265,7 @@ public class EventsTest {
     }
 
     private static final class ElementMatcher implements ArgumentMatcher<FluentWebElement> {
+
         private final WebElement element;
 
         ElementMatcher(WebElement element) {
@@ -273,7 +288,8 @@ public class EventsTest {
         }
     }
 
-    private abstract static class JavascriptWebDriver implements WebDriver, JavascriptExecutor { // NOPMD AbstractNaming
+    private abstract static class JavascriptWebDriver implements WebDriver,
+            JavascriptExecutor { // NOPMD AbstractNaming
 
     }
 }

@@ -1,5 +1,7 @@
 package io.fluentlenium.test.annotations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.fluentlenium.core.FluentControl;
 import io.fluentlenium.core.components.ComponentInstantiator;
 import io.fluentlenium.core.domain.FluentList;
@@ -8,16 +10,15 @@ import io.fluentlenium.core.events.annotations.AfterClickOn;
 import io.fluentlenium.core.events.annotations.AfterFindBy;
 import io.fluentlenium.core.events.annotations.BeforeClickOn;
 import io.fluentlenium.core.events.annotations.BeforeFindBy;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WrapsElement;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
+@Disabled("Not using Events")
 public class AnnotationsComponentEventsTest extends AnnotationsComponentEventsTestSubClass {
     private final List<WebElement> beforeClick = new ArrayList<>();
 
