@@ -208,3 +208,8 @@ node_modules/
 node/
 
 .mvn/.gradle-enterprise/
+
+# Specific IDE
+
+!.gitlab-ci.yml
+!.gitignore
